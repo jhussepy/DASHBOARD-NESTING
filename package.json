@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "create:workbook": "node scripts/create-onboarding-workbook.mjs",
+    "predev": "npm run create:workbook",
+    "prebuild": "npm run create:workbook",
     "preview:static": "python3 -m http.server 4173 --bind 127.0.0.1",
     "dev": "next dev",
     "build": "next build",

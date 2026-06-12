@@ -1,63 +1,97 @@
 # Vodafone Onboarding Command Center
 
-Aplicación web profesional creada con Next.js, TypeScript y Tailwind CSS para coordinar el ingreso de asesores nuevos de Vodafone. El panel centraliza asesores, accesos operativos, retail, contrato, formación, inducción, evidencias, calidad, reportes y seguimiento de producción inicial.
+Sistema web premium para coordinar el onboarding de asesores nuevos Vodafone. Incluye dashboard ejecutivo, modo oscuro/claro/auto, Excel editable como fuente de datos, tablas profesionales, ficha 360 del asesor, modo TV y un **Copiloto IA de Coordinación** como módulo protagonista.
 
-## Características principales
-
-- Dashboard general con KPIs, ranking de avance, semáforos y alertas automáticas.
-- Gestión demo de asesores: crear, editar estado, eliminar y consultar historial.
-- Control de credenciales y accesos sin guardar contraseñas ni datos sensibles.
-- Módulo de inducción operativa con checklist, evidencias y constancia interna.
-- Biblioteca dinámica de tarifas Vodafone con argumentos comerciales y rebate recomendado.
-- Biblioteca de objeciones y rebate profesional con ejemplos de llamada.
-- Formación comercial con módulos iniciales, avance, notas y resultado final.
-- IA principal visible para análisis, reportes, mensajes, riesgos y recomendaciones.
-- Calidad comercial inicial y reportes preparados para exportación.
-- Modo TV para coordinación en pantalla completa.
-- Configuración dinámica para ampliar campos, estados, módulos, checklists e incidencias.
-
-## Stack
-
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- Datos demo en memoria, preparados para reemplazarse por servicios y base de datos real
-
-
-## Ver la aplicación ahora sin instalar dependencias
-
-Si el entorno no permite instalar paquetes de npm, abre directamente el archivo estático `index.html` en el navegador. También puedes servirlo con Python:
-
-```bash
-python3 -m http.server 4173
-```
-
-Después abre `http://localhost:4173`. Esta vista estática incluye el dashboard, datos demo, módulos principales e IA simulada para poder revisar la experiencia visual inmediatamente.
-
-## Ejecutar la versión Next.js en local
+## Ver la aplicación
 
 ```bash
 npm install
+npm run create:workbook
 npm run dev
 ```
 
-Abrir `http://localhost:3000` en el navegador.
+Abrir `http://localhost:3000`.
+
+## Excel editable
+
+La fuente de datos está en:
+
+```bash
+data/vodafone_onboarding_base_dinamica.xlsx
+```
+
+Hojas incluidas:
+
+- `Dashboard_Excel`
+- `Asesores`
+- `Accesos_Contrato`
+- `Induccion`
+- `Tarifas`
+- `Rebate`
+- `Formacion`
+- `Calidad`
+- `Incidencias`
+- `Catalogos`
+
+El archivo Excel no se sube al repositorio porque es binario. Para generarlo localmente ejecuta:
+
+```bash
+npm run create:workbook
+```
+
+Luego inicia el proyecto normalmente con `npm run dev`. Además, los scripts `predev` y `prebuild` regeneran el Excel automáticamente en checkouts limpios, sin subir el binario al PR. El dashboard seguirá leyendo el Excel desde `/data/vodafone_onboarding_base_dinamica.xlsx`. Puedes modificar el archivo, guardarlo y pulsar **Sincronizar Excel** en el dashboard. También existe auto-refresh opcional cada 30 o 60 segundos.
+
+> Importante: el Excel solo contiene estados operativos. No se guardan contraseñas reales ni credenciales sensibles. Los `.xlsx` locales están ignorados por git (`data/*.xlsx`).
+
+## API de datos
+
+La ruta:
+
+```bash
+/api/onboarding
+```
+
+lee `data/vodafone_onboarding_base_dinamica.xlsx` con `xlsx` y devuelve:
+
+- `asesores`
+- `accesosContrato`
+- `induccion`
+- `tarifas`
+- `rebate`
+- `formacion`
+- `calidad`
+- `incidencias`
+- `catalogos`
+- `dashboardExcel`
 
 ## Comandos útiles
 
 ```bash
-npm run build
 npm run lint
+npm run build
+npm run preview:static
 ```
 
-## Estructura
+## Arquitectura
 
-- `app/page.tsx`: interfaz principal, módulos funcionales y estado demo en frontend.
-- `app/globals.css`: tema visual premium oscuro con acentos Vodafone.
-- `lib/types.ts`: contratos TypeScript para asesores, accesos, formación, tarifas, rebate, calidad y configuración.
-- `lib/demo-data.ts`: datos iniciales para probar el sistema.
-- `lib/analytics.ts`: KPIs, alertas automáticas y respuestas IA demo.
+- `src/app/api/onboarding/route.ts`: API route para leer Excel.
+- `src/app/page.tsx`: entrada del dashboard con lectura inicial del workbook.
+- `src/components/layout`: shell corporativo y navegación.
+- `src/components/dashboard`: KPIs, alertas, ranking, modo TV y command center.
+- `src/components/tables`: tabla reutilizable con búsqueda, ordenamiento y vistas.
+- `src/components/ai`: Copiloto IA de Coordinación.
+- `src/components/theme`: selector dark/light/system con localStorage.
+- `src/components/advisors`: ficha 360 del asesor.
+- `src/lib/excel`: lectura y normalización del workbook.
+- `src/lib/types`: tipos TypeScript principales.
+- `src/lib/utils`: analítica, IA local, formato y estados.
 
-## Preparación para base de datos real
+## Vista estática opcional
 
-La aplicación separa tipos, datos y analítica. Para conectar una base de datos real, sustituir `lib/demo-data.ts` por funciones de acceso a datos y mover las mutaciones de `app/page.tsx` a rutas de servidor o acciones seguras. Los estados de credenciales se mantienen como valores operativos y no almacenan contraseñas reales.
+También se mantiene `index.html` como preview estática rápida si se quiere abrir una página sin Next.js:
+
+```bash
+npm run preview:static
+```
+
+Abrir `http://127.0.0.1:4173/index.html`.

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "create:workbook": "node scripts/create-onboarding-workbook.mjs",
+    "predev": "npm run create:workbook",
+    "prebuild": "npm run create:workbook",
     "preview:static": "python3 -m http.server 4173 --bind 127.0.0.1",
     "dev": "next dev",
     "build": "next build",
@@ -18,7 +21,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.19",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

@@ -1,0 +1,2 @@
+# Generated local workbook files must never be reviewed as text diffs if someone force-adds one locally.
+data/*.xlsx binary

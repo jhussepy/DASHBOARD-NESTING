@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vodafone Onboarding Command Center</title>
+  <style>
+    :root {
+      --red: #e60000;
+      --red-2: #ff3b30;
+      --bg: #07070a;
+      --panel: rgba(255,255,255,.065);
+      --panel-2: rgba(255,255,255,.1);
+      --line: rgba(255,255,255,.12);
+      --text: #fafafa;
+      --muted: rgba(255,255,255,.66);
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --blue: #60a5fa;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: radial-gradient(circle at 0 0, rgba(230,0,0,.36), transparent 34rem), radial-gradient(circle at 84% 8%, rgba(255,255,255,.12), transparent 27rem), var(--bg);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
+    .app { display: grid; grid-template-columns: 280px minmax(0,1fr) 410px; gap: 22px; max-width: 1840px; margin: 0 auto; padding: 22px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 24px 90px rgba(0,0,0,.32); backdrop-filter: blur(18px); }
+    .sidebar, .ai { position: sticky; top: 22px; height: fit-content; padding: 20px; }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .logo { width: 50px; height: 50px; border-radius: 50%; background: var(--red); display: grid; place-items: center; font-weight: 950; font-size: 26px; box-shadow: 0 0 38px rgba(230,0,0,.38); }
+    .eyebrow { color: var(--red-2); font-size: 12px; text-transform: uppercase; letter-spacing: .22em; font-weight: 800; }
+    h1, h2, h3 { margin: 0; line-height: 1.05; }
+    h1 { font-size: clamp(36px, 5vw, 72px); letter-spacing: -.06em; }
+    h2 { font-size: 26px; letter-spacing: -.03em; }
+    h3 { font-size: 18px; }
+    p { color: var(--muted); line-height: 1.55; }
+    .nav { display: grid; gap: 8px; margin-top: 24px; }
+    .nav a { border-radius: 17px; padding: 12px 14px; color: rgba(255,255,255,.72); transition: .2s; }
+    .nav a:hover { background: var(--red); color: white; transform: translateX(3px); }
+    .hero { padding: 34px; overflow: hidden; position: relative; }
+    .hero:after { content: ""; position: absolute; inset: auto -80px -150px auto; width: 360px; height: 360px; background: radial-gradient(circle, rgba(230,0,0,.42), transparent 64%); pointer-events: none; }
+    .hero-grid { display: flex; justify-content: space-between; gap: 22px; align-items: flex-end; position: relative; z-index: 1; }
+    .hero p { max-width: 860px; font-size: 18px; }
+    .mini-stats { display: grid; grid-template-columns: repeat(3, 120px); gap: 10px; text-align: center; }
+    .mini { border-radius: 20px; background: rgba(255,255,255,.09); padding: 16px; }
+    .mini strong { display: block; font-size: 30px; }
+    main { display: grid; gap: 36px; }
+    section { scroll-margin-top: 22px; }
+    .section-head { margin-bottom: 16px; }
+    .section-head p { margin: 8px 0 0; }
+    .kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+    .kpi { border-radius: 24px; padding: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.055); }
+    .kpi strong { display: block; font-size: 32px; margin-bottom: 8px; }
+    .kpi.ok { background: rgba(34,197,94,.11); border-color: rgba(34,197,94,.34); }
+    .kpi.warn { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.34); }
+    .kpi.bad { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.34); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+    .panel { padding: 20px; }
+    .bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
+    .bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--red),#ff9b9b); box-shadow: 0 0 22px rgba(230,0,0,.35); }
+    .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 12px 0 8px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid var(--line); padding: 5px 10px; font-size: 12px; color: rgba(255,255,255,.78); background: rgba(255,255,255,.06); }
+    .badge.ok { color: #dcfce7; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12); }
+    .badge.warn { color: #fef3c7; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+    .badge.bad { color: #fee2e2; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12); }
+    table { width: 100%; border-collapse: collapse; min-width: 950px; font-size: 14px; }
+    th { text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); font-size: 11px; background: rgba(255,255,255,.08); }
+    th, td { padding: 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .table-wrap { overflow-x: auto; }
+    input, select, textarea { width: 100%; border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,.32); color: white; padding: 12px; outline: none; }
+    textarea { min-height: 112px; resize: vertical; }
+    .btn { border: 0; border-radius: 16px; padding: 12px 16px; background: var(--red); color: white; font-weight: 800; cursor: pointer; transition: .2s; box-shadow: 0 0 28px rgba(230,0,0,.22); }
+    .btn:hover { transform: translateY(-1px); background: #c90000; }
+    .btn.light { background: white; color: black; box-shadow: none; }
+    .form { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 10px; padding: 18px; margin-bottom: 14px; }
+    .tile { border-radius: 22px; background: rgba(0,0,0,.23); border: 1px solid var(--line); padding: 16px; }
+    .list { display: grid; gap: 10px; }
+    .constancia { margin-top: 12px; border-radius: 18px; padding: 14px; background: rgba(230,0,0,.12); border: 1px solid rgba(230,0,0,.28); color: #ffe5e5; font-size: 14px; }
+    .ai textarea { margin-top: 14px; }
+    .ai-output { white-space: pre-wrap; margin-top: 14px; border-radius: 20px; padding: 16px; background: rgba(0,0,0,.35); border: 1px solid var(--line); color: rgba(255,255,255,.84); line-height: 1.55; font-size: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip { border: 1px solid var(--line); background: rgba(255,255,255,.06); color: rgba(255,255,255,.72); border-radius: 999px; padding: 7px 10px; cursor: pointer; font-size: 12px; }
+    .tv { background: #020203; border-color: rgba(230,0,0,.34); box-shadow: 0 0 48px rgba(230,0,0,.18); }
+    .tv-metric { border-radius: 24px; padding: 22px; background: rgba(255,255,255,.07); }
+    .tv-metric.red { background: var(--red); }
+    .tv-metric strong { font-size: 48px; display: block; }
+    .config-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    @media (max-width: 1280px) { .app { grid-template-columns: 240px 1fr; } .ai { grid-column: 1 / -1; position: static; } .kpis { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 860px) { .app { display: block; padding: 12px; } .sidebar { position: static; margin-bottom: 14px; } .hero-grid, .grid-2, .grid-3, .form, .config-grid { grid-template-columns: 1fr; display: grid; } .mini-stats, .kpis { grid-template-columns: repeat(2,1fr); } section { margin-top: 28px; } }
+    @media (max-width: 520px) { .mini-stats, .kpis { grid-template-columns: 1fr; } .hero { padding: 22px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar card">
+      <div class="brand"><div class="logo">V</div><div><div style="font-size:11px;letter-spacing:.28em;color:rgba(255,255,255,.48);text-transform:uppercase">Vodafone</div><strong>Onboarding Command Center</strong></div></div>
+      <nav class="nav">
+        <a href="#control">Control</a><a href="#asesores">Asesores</a><a href="#accesos">Accesos</a><a href="#induccion">Inducción</a><a href="#tarifas">Tarifas</a><a href="#rebate">Rebate</a><a href="#formacion">Formación</a><a href="#calidad">Calidad</a><a href="#reportes">Reportes</a><a href="#tv">Modo TV</a><a href="#config">Configuración</a>
+      </nav>
+      <div class="tile" style="margin-top:18px"><strong>Vista inmediata</strong><p>Este archivo puede abrirse directamente en el navegador o servirse con Python, sin instalar dependencias.</p></div>
+    </aside>
+
+    <main>
+      <header class="hero card">
+        <div class="hero-grid">
+          <div><div class="badge bad">Control center premium</div><h1>Vodafone Onboarding Command Center</h1><p>Dashboard profesional para gestionar ingresos, accesos operativos, retail, contrato, formación, inducción, evidencias, calidad comercial y producción inicial con IA como asistente principal.</p></div>
+          <div class="mini-stats"><div class="mini"><strong id="mini-total">0</strong><span>asesores</span></div><div class="mini"><strong id="mini-alerts">0</strong><span>alertas</span></div><div class="mini" style="background:var(--red)"><strong>IA</strong><span>principal</span></div></div>
+        </div>
+      </header>
+
+      <section id="control"><div class="section-head"><h2>Dashboard general</h2><p>KPIs principales, gráficos de avance, ranking, semáforos y alertas automáticas.</p></div><div id="kpis" class="kpis"></div><div class="grid-2" style="margin-top:16px"><div class="card panel"><h3>Ranking de avance</h3><div id="ranking"></div></div><div class="card panel"><h3>Alertas críticas</h3><div id="alerts" class="list"></div></div></div></section>
+
+      <section id="asesores"><div class="section-head"><h2>Gestión de asesores</h2><p>Crear, editar, eliminar y consultar asesores con historial demo de cambios.</p></div><form class="card form" id="advisor-form"><input id="new-name" placeholder="Nombre completo" required><input id="new-supervisor" value="Laura Campos" placeholder="Supervisor"><select id="new-status"><option>Nuevo ingreso</option><option>En documentación</option><option>Pendiente de contrato</option><option>Contrato enviado</option><option>Contrato firmado</option><option>Credenciales pendientes</option><option>Retail pendiente</option><option>En formación</option><option>Listo para producción</option><option>Bloqueado</option><option>Baja / No continúa</option></select><button class="btn" type="submit">Crear asesor</button></form><div class="card table-wrap"><table><thead><tr><th>Asesor</th><th>Ingreso</th><th>Supervisor</th><th>Estado</th><th>Avance</th><th>Próxima acción</th><th></th></tr></thead><tbody id="advisor-rows"></tbody></table></div></section>
+
+      <section id="accesos"><div class="section-head"><h2>Credenciales, contrato y accesos</h2><p>Control de estados operativos sin guardar contraseñas ni información sensible.</p></div><div id="access-grid" class="grid-2"></div></section>
+
+      <section id="induccion"><div class="section-head"><h2>Inducción operativa y evidencias</h2><p>Checklist por asesor con estado, responsable, confirmación, evidencia y constancia interna.</p></div><div id="induction-grid" class="grid-2"></div></section>
+
+      <section id="tarifas"><div class="section-head"><h2>Biblioteca dinámica de tarifas Vodafone</h2><p>Tarifas editables, filtros por segmento, comparador visual y argumentario comercial asistido por IA.</p></div><div class="card panel" style="margin-bottom:14px"><button class="btn" id="add-tariff">Crear tarifa demo</button> <span class="badge">residencial</span> <span class="badge">autónomo</span> <span class="badge">empresa</span> <span class="badge">low cost</span> <span class="badge">fibra</span> <span class="badge">móvil</span></div><div id="tariff-grid" class="grid-3"></div></section>
+
+      <section id="rebate"><div class="section-head"><h2>Rebate y objeciones</h2><p>Biblioteca profesional para respuestas, diagnóstico, cierre, riesgos de calidad y ejercicios de práctica.</p></div><div class="card panel" style="margin-bottom:14px"><button class="btn" id="add-objection">Crear objeción demo</button> <span class="badge">Simulación IA</span> <span class="badge">Evaluación</span> <span class="badge">Mejora sugerida</span></div><div id="objection-grid" class="grid-2"></div></section>
+
+      <section id="formacion"><div class="section-head"><h2>Formación comercial</h2><p>Módulos, checklists, exámenes rápidos, prácticas, simulaciones y resultado final.</p></div><div id="training-grid" class="grid-2"></div></section>
+
+      <section id="calidad"><div class="section-head"><h2>Calidad comercial</h2><p>Evaluación inicial de saludo, oferta, condiciones, tratamiento de datos, cierre correcto y refuerzo.</p></div><div id="quality-grid" class="grid-2"></div></section>
+
+      <section id="reportes"><div class="section-head"><h2>Reportes</h2><p>Reportes diario, semanal, por asesor, supervisor, bloqueos, retail pendiente, contratos e inducción.</p></div><div class="card panel grid-3"><button class="btn light">Exportar Excel</button><button class="btn light">Exportar PDF</button><button class="btn">Generar reporte con IA</button></div><div id="report-grid" class="grid-3" style="margin-top:14px"></div></section>
+
+      <section id="tv"><div class="section-head"><h2>Modo TV</h2><p>Vista de coordinación para pantalla grande.</p></div><div class="card panel tv"><div class="grid-3"><div class="tv-metric red"><strong id="tv-total">0</strong>Total asesores nuevos</div><div class="tv-metric"><strong id="tv-ready">0</strong>Listos para producción</div><div class="tv-metric"><strong id="tv-blocked">0</strong>Bloqueados</div></div><div class="grid-2" style="margin-top:16px"><div class="tile"><h3>Próximas acciones</h3><div id="tv-actions"></div></div><div class="tile"><h3>Resumen IA del día</h3><div id="tv-ai"></div></div></div></div></section>
+
+      <section id="config"><div class="section-head"><h2>Configuración dinámica</h2><p>Añade campos, estados, módulos, objeciones, tarifas, checklists, tipos de incidencia y textos base de IA.</p></div><div id="config-grid" class="config-grid"></div></section>
+    </main>
+
+    <aside class="ai card">
+      <div class="eyebrow">IA principal</div><h2>Copiloto de coordinación</h2><p>Resume, detecta riesgos, genera reportes, crea mensajes y recomienda acciones.</p>
+      <textarea id="ai-prompt">Dame el resumen de ingresos de hoy</textarea><button class="btn" id="ai-run" style="width:100%;margin-top:10px">Analizar con IA</button>
+      <div class="chips"><button class="chip">Qué asesores están bloqueados y por qué</button><button class="chip">Qué asesores no tienen retail activo</button><button class="chip">Crea un mensaje para recordar la firma del contrato</button><button class="chip">Quién no ha recibido explicación de cancelación de movilidad</button><button class="chip">Genera rebate para la objeción está caro</button></div>
+      <div class="ai-output" id="ai-output"></div>
+    </aside>
+  </div>
+
+  <script>
+    const inductionTitles = ["Se explicó proceso de cancelación correcta de movilidad", "Se explicó cuándo debe cancelar movilidad", "Se explicó a quién debe reportar incidencias de movilidad", "Se explicó procedimiento en caso de error o ausencia de movilidad", "Se explicó responsabilidad del asesor ante cambios o cancelaciones", "Se explicó proceso de comunicación con supervisor/coordinador", "Se explicó normativa básica de asistencia", "Se explicó uso correcto de herramientas asignadas", "Se explicó proceso de escalamiento de incidencias", "Se explicó protocolo de calidad comercial inicial"];
+    const trainingModules = ["Introducción Vodafone", "Tarifas principales", "Retail y accesos", "Contrato y firma", "Calidad comercial", "Cancelación de movilidad", "Rebate y objeciones", "Cierre de venta", "Errores frecuentes", "Protocolo de incidencias"];
+    const makeInduction = done => inductionTitles.map((title, i) => ({ title, status: i < done ? (i % 3 ? "explicado" : "reforzado") : (i === done ? "requiere nueva explicación" : "pendiente"), date: i < done ? "2026-06-10" : "pendiente", owner: i < done ? "Laura Campos" : "pendiente", confirmed: i < done }));
+    const makeTraining = base => trainingModules.map((module, i) => ({ module, progress: Math.max(20, Math.min(100, base + i * 4 - 18)), score: Math.max(48, Math.min(98, base + i * 2 - 6)), result: base + i * 2 > 76 ? "apto" : base + i * 2 > 58 ? "necesita refuerzo" : "bloqueado" }));
+    let advisors = [
+      { id:"adv-1", name:"Marina Soler Prieto", identifier:"INT-2401", entry:"2026-06-10", supervisor:"Laura Campos", shift:"Mañana", campaign:"Residencial fibra y móvil", status:"En formación", phone:"+34 600 111 222", email:"marina.soler@example.com", progress:72, tags:["alto potencial","tarifas"], next:"Completar simulación y validar checklist de cancelación de movilidad.", notes:"Buen dominio de argumentario.", access:{vodafone:"activo", internal:"activo", learning:"activo", retail:"activo", delivery:"confirmado", signature:"firmado", owner:"Diego Ramos", requested:"2026-06-09T09:00:00Z", incidents:[]}, induction:makeInduction(7), training:makeTraining(70), quality:{type:"simulada", score:82, reinforce:true, errors:["Cierre poco directo"]}},
+      { id:"adv-2", name:"Nabil Ortega Ruiz", identifier:"INT-2402", entry:"2026-06-11", supervisor:"Sergio Vidal", shift:"Tarde", campaign:"Valor convergente", status:"Bloqueado", phone:"+34 600 333 444", email:"nabil.ortega@example.com", progress:38, tags:["bloqueo","retail"], next:"Asignar responsable y escalar activación de retail antes del cierre del día.", notes:"Bloqueo operativo por retail pendiente y ausencia de responsable asignado.", access:{vodafone:"solicitado", internal:"activo", learning:"pendiente", retail:"pendiente", delivery:"enviado", signature:"pendiente", owner:"", requested:"2026-06-09T08:00:00Z", incidents:["Retail pendiente más de 48 horas", "Falta responsable asignado"]}, induction:makeInduction(3), training:makeTraining(48), quality:{type:"simulada", score:54, reinforce:true, errors:["No explica permanencia", "No confirma condiciones"]}},
+      { id:"adv-3", name:"Claudia Beltrán Mesa", identifier:"INT-2403", entry:"2026-06-12", supervisor:"Laura Campos", shift:"Mañana", campaign:"Autónomos", status:"Credenciales pendientes", phone:"+34 600 555 666", email:"claudia.beltran@example.com", progress:51, tags:["pre-ingreso","documentación ok"], next:"Revisar credenciales al cumplir 24 horas y confirmar formación inicial.", notes:"Documentación revisada.", access:{vodafone:"solicitado", internal:"solicitado", learning:"activo", retail:"en proceso", delivery:"confirmado", signature:"firmado", owner:"Marta León", requested:"2026-06-11T07:30:00Z", incidents:[]}, induction:makeInduction(5), training:makeTraining(61), quality:null},
+      { id:"adv-4", name:"Irene Vega Santos", identifier:"INT-2404", entry:"2026-06-09", supervisor:"Pablo Martín", shift:"Partido", campaign:"Low cost", status:"Listo para producción", phone:"+34 600 777 888", email:"irene.vega@example.com", progress:94, tags:["producción inicial","apta"], next:"Iniciar producción inicial con revisión de primeras ventas.", notes:"Apta para primeras llamadas.", access:{vodafone:"activo", internal:"activo", learning:"activo", retail:"activo", delivery:"confirmado", signature:"firmado", owner:"Pablo Martín", requested:"2026-06-08T10:00:00Z", incidents:[]}, induction:makeInduction(10), training:makeTraining(88), quality:{type:"real", score:94, reinforce:false, errors:[]}}
+    ];
+    let tariffs = [
+      {name:"Fibra 600 + Móvil 50GB", price:"39,99€", fiber:"600Mb", lines:1, gb:"50GB", status:"activa", segments:["residencial","valor","fibra","móvil"], argument:"Equilibrio sólido para hogares que quieren estabilidad y datos suficientes.", rebate:"Comparar coste total frente a contratar servicios separados."},
+      {name:"Solo Móvil Ilimitada", price:"24,99€", fiber:"No aplica", lines:1, gb:"Ilimitados", status:"activa", segments:["móvil","low cost"], argument:"Libertad para clientes que no quieren cambiar fibra.", rebate:"Centrar la conversación en libertad, cobertura y simplicidad."},
+      {name:"Autónomo Pro Fibra 1Gb", price:"54,99€", fiber:"1Gb", lines:2, gb:"100GB", status:"activa", segments:["autónomo","empresa","fibra"], argument:"Productividad y soporte para negocio pequeño.", rebate:"Diagnosticar coste de interrupciones y valor del soporte."}
+    ];
+    let objections = ["Está caro", "Lo voy a pensar", "No quiero permanencia", "Tengo que hablarlo con mi pareja", "Ya tengo otra compañía", "No quiero cambiar", "He tenido mala experiencia", "No me interesa", "Llámame otro día", "No quiero dar mis datos", "No confío en ofertas por teléfono"].map((o,i)=>({ objection:o, type:i%2?"indeciso":"residencial", answer:"Entiendo la preocupación. Revisemos precio, condiciones, valor real y siguiente paso sin presión.", question:"¿Qué punto necesitas tener claro para decidir con seguridad?", close:"Cierre por diagnóstico y comparación de valor", risk:"No prometer condiciones no confirmadas", example:`Cliente: ${o}. Asesor: Lo revisamos con datos claros y sin presión.` }));
+    const config = { customFields:["Canal de incorporación","Nivel de experiencia","Disponibilidad extra"], customStatuses:["Validación documental","Producción acompañada"], trainingModules, objectionTypes: objections.map(o=>o.objection), tariffFamilies:["residencial","autónomo","empresa","low cost","valor","fibra","móvil","streaming"], checklistTemplates: inductionTitles, incidentTypes:["Retail pendiente","Credencial bloqueada","Contrato sin firma","Formación incompleta","Calidad crítica"], enabledModules:["Dashboard","Asesores","Accesos","Inducción","Tarifas","Rebate","Formación","Calidad","Reportes","Modo TV","Configuración"], aiBaseTexts:["Responder en tono profesional y accionable","No solicitar ni registrar contraseñas","Priorizar bloqueos por impacto operativo"] };
+    const $ = id => document.getElementById(id);
+    const hoursSince = iso => iso ? (Date.now() - new Date(iso).getTime()) / 36e5 : 0;
+    function alerts(){ return advisors.flatMap(a => { const out=[]; if(["solicitado","pendiente"].includes(a.access.vodafone) && hoursSince(a.access.requested)>24) out.push({a:a.name, sev:"alta", msg:"Credencial pendiente más de 24 horas", action:"Escalar activación y confirmar responsable."}); if(["pendiente","en proceso"].includes(a.access.retail) && hoursSince(a.access.requested)>48) out.push({a:a.name, sev:"crítica", msg:"Retail pendiente más de 48 horas", action:"Priorizar desbloqueo de retail hoy."}); if(a.access.delivery==="enviado" && a.access.signature!=="firmado") out.push({a:a.name, sev:"alta", msg:"Contrato enviado pero no firmado", action:"Enviar recordatorio y validar dudas."}); if(a.status==="Bloqueado") out.push({a:a.name, sev:"crítica", msg:"Asesor bloqueado por falta de acceso", action:a.next}); if(!a.access.owner) out.push({a:a.name, sev:"media", msg:"Falta responsable asignado", action:"Asignar propietario de gestión."}); if(a.quality && (a.quality.reinforce || a.quality.score<70)) out.push({a:a.name, sev:"alta", msg:"Riesgo de calidad comercial inicial", action:"Programar refuerzo y nueva simulación."}); return out; }); }
+    function ai(prompt){ const p=prompt.toLowerCase(), blocked=advisors.filter(a=>a.status==="Bloqueado"), retail=advisors.filter(a=>a.access.retail!=="activo"), unsigned=advisors.filter(a=>a.access.signature!=="firmado"), mobility=advisors.filter(a=>!a.induction[0].confirmed), al=alerts(); if(p.includes("bloque")) return `Análisis de bloqueos\n\n${blocked.map(a=>`• ${a.name}: ${a.notes} Acción: ${a.next}`).join("\n") || "• No hay asesores bloqueados."}\n\nPrioridad: resolver retail, responsable asignado y firma pendiente.`; if(p.includes("retail")) return `Asesores sin retail activo\n\n${retail.map(a=>`• ${a.name}: retail ${a.access.retail}. Responsable: ${a.access.owner || "sin asignar"}.`).join("\n")}`; if(p.includes("firma")||p.includes("contrato")) return `Seguimiento de contrato\n\n${unsigned.map(a=>`• ${a.name}: envío ${a.access.delivery}, firma ${a.access.signature}.`).join("\n") || "• Todos los contratos están firmados."}\n\nMensaje sugerido: Hola, te recordamos revisar y firmar el contrato enviado. Si tienes dudas, avísanos hoy.`; if(p.includes("cancelación")||p.includes("movilidad")) return `Inducción de cancelación de movilidad\n\n${mobility.map(a=>`• ${a.name}: requiere constancia o refuerzo.`).join("\n") || "• Todos tienen explicación registrada."}`; if(p.includes("rebate")||p.includes("caro")) return `Rebate para “Está caro”\n\n• Validar: “Entiendo que el precio sea clave.”\n• Diagnosticar: “¿Qué pagas ahora sumando fibra, líneas y extras?”\n• Responder: comparar coste total, estabilidad y servicios incluidos.\n• Cierre: confirmar si con esos datos la tarifa mejora su situación actual.`; return `Resumen ejecutivo\n\n• Ingresos activos: ${advisors.length}.\n• Listos para producción: ${advisors.filter(a=>a.status==="Listo para producción").length}.\n• Bloqueados: ${blocked.length}.\n• Retail pendiente: ${retail.length}.\n• Contratos pendientes de firma: ${unsigned.length}.\n• Alertas críticas: ${al.filter(x=>x.sev==="crítica").length}.\n\nAcción recomendada: atender alertas críticas, calidad menor a 70 y evidencias internas pendientes.`; }
+    function render(){ const al=alerts(); const avg=Math.round(advisors.reduce((s,a)=>s+a.progress,0)/advisors.length); const kpis=[['Total asesores nuevos',advisors.length,''],['Pre-ingreso',advisors.filter(a=>['Nuevo ingreso','En documentación'].includes(a.status)).length,''],['Credenciales pendientes',advisors.filter(a=>['solicitado','pendiente'].includes(a.access.vodafone)).length,'warn'],['Credenciales activas',advisors.filter(a=>a.access.vodafone==='activo').length,'ok'],['Retail pendiente',advisors.filter(a=>a.access.retail!=='activo').length,'warn'],['Retail activo',advisors.filter(a=>a.access.retail==='activo').length,'ok'],['Contrato enviado',advisors.filter(a=>a.access.delivery==='enviado').length,'warn'],['Contrato firmado',advisors.filter(a=>a.access.signature==='firmado').length,'ok'],['En formación',advisors.filter(a=>a.status==='En formación').length,''],['Listos producción',advisors.filter(a=>a.status==='Listo para producción').length,'ok'],['Bloqueados',advisors.filter(a=>a.status==='Bloqueado').length,'bad'],['Con incidencias',advisors.filter(a=>a.access.incidents.length || (a.quality&&a.quality.reinforce)).length,'bad'],['Avance promedio',avg+'%',''],['Alertas críticas',al.filter(a=>a.sev==='crítica').length,'bad']]; $('kpis').innerHTML=kpis.map(k=>`<div class="kpi ${k[2]}"><strong>${k[1]}</strong><span>${k[0]}</span></div>`).join(''); $('mini-total').textContent=advisors.length; $('mini-alerts').textContent=al.length; $('ranking').innerHTML=[...advisors].sort((a,b)=>b.progress-a.progress).map(a=>`<div><div class="row"><span>${a.name}</span><b>${a.progress}%</b></div><div class="bar"><span style="width:${a.progress}%"></span></div></div>`).join(''); $('alerts').innerHTML=al.slice(0,7).map(x=>`<div class="tile"><span class="badge ${x.sev==='crítica'?'bad':'warn'}">${x.sev}</span> <b>${x.a}</b><p>${x.msg}</p><small>Acción: ${x.action}</small></div>`).join('') || '<p>Sin alertas críticas.</p>'; $('advisor-rows').innerHTML=advisors.map(a=>`<tr><td><b>${a.name}</b><br><small>${a.identifier} · ${a.email}</small><br>${a.tags.map(t=>`<span class="badge">${t}</span>`).join(' ')}</td><td>${a.entry}</td><td>${a.supervisor}</td><td><span class="badge ${a.status==='Bloqueado'?'bad':a.status==='Listo para producción'?'ok':'warn'}">${a.status}</span></td><td><div class="bar"><span style="width:${a.progress}%"></span></div>${a.progress}%</td><td>${a.next}</td><td><button class="btn light" onclick="removeAdvisor('${a.id}')">Eliminar</button></td></tr>`).join(''); $('access-grid').innerHTML=advisors.map(a=>`<div class="card panel"><div class="row"><h3>${a.name}</h3><span class="badge ${a.status==='Bloqueado'?'bad':''}">${a.status}</span></div><div class="grid-2"><div class="tile">Usuario Vodafone<br><b>${a.access.vodafone}</b></div><div class="tile">Acceso interno<br><b>${a.access.internal}</b></div><div class="tile">Formación<br><b>${a.access.learning}</b></div><div class="tile">Retail<br><b>${a.access.retail}</b></div><div class="tile">Envío contrato<br><b>${a.access.delivery}</b></div><div class="tile">Firma contrato<br><b>${a.access.signature}</b></div></div><p>Responsable: ${a.access.owner || 'Sin asignar'}</p></div>`).join(''); $('induction-grid').innerHTML=advisors.map(a=>`<div class="card panel"><h3>${a.name}</h3><div class="list">${a.induction.slice(0,5).map(i=>`<div class="tile"><span class="badge ${i.confirmed?'ok':'warn'}">${i.status}</span><p>${i.title}</p><small>${i.date} · ${i.owner} · confirmación: ${i.confirmed?'sí':'no'}</small></div>`).join('')}</div><div class="constancia">El asesor recibió inducción sobre cancelación correcta de movilidad el día ${a.induction[0].date}, explicada por ${a.induction[0].owner}. Se deja constancia en el sistema.</div></div>`).join(''); $('tariff-grid').innerHTML=tariffs.map((t,i)=>`<div class="card panel"><div class="row"><h3>${t.name}</h3><span class="badge ok">${t.status}</span></div><h2>${t.price}</h2><p>${t.fiber} · ${t.lines} líneas · ${t.gb}</p><div class="chips">${t.segments.map(s=>`<span class="badge">${s}</span>`).join('')}</div><p>${t.argument}</p><p><b>Rebate:</b> ${t.rebate}</p><button class="btn light" onclick="tariffs.splice(${i},1);render()">Eliminar</button></div>`).join(''); $('objection-grid').innerHTML=objections.map((o,i)=>`<div class="card panel"><div class="row"><h3>${o.objection}</h3><span class="badge">${o.type}</span></div><p>${o.answer}</p><p><b>Pregunta:</b> ${o.question}</p><p><b>Cierre:</b> ${o.close}</p><p><b>Riesgo:</b> ${o.risk}</p><small>${o.example}</small><br><br><button class="btn light" onclick="objections.splice(${i},1);render()">Eliminar</button></div>`).join(''); $('training-grid').innerHTML=advisors.map(a=>`<div class="card panel"><h3>${a.name}</h3>${a.training.slice(0,5).map(m=>`<div class="tile"><div class="row"><span>${m.module}</span><b>${m.progress}% · ${m.score}</b></div><div class="bar"><span style="width:${m.progress}%"></span></div><span class="badge ${m.result==='apto'?'ok':m.result==='bloqueado'?'bad':'warn'}">${m.result}</span></div>`).join('')}</div>`).join(''); $('quality-grid').innerHTML=advisors.filter(a=>a.quality).map(a=>`<div class="card panel"><div class="row"><h3>${a.name}</h3><span class="badge ${a.quality.reinforce?'warn':'ok'}">${a.quality.score}/100</span></div><p>Llamada ${a.quality.type}. Errores: ${a.quality.errors.join(', ') || 'sin errores críticos'}.</p><p>${a.quality.reinforce?'Requiere refuerzo y nueva simulación.':'Apta para seguimiento estándar.'}</p></div>`).join(''); $('report-grid').innerHTML=['Reporte diario','Reporte semanal','Reporte por asesor','Reporte por supervisor','Reporte de bloqueos','Reporte de retail pendiente','Reporte de contratos pendientes','Reporte de inducción operativa','Reporte de cancelación de movilidad explicada'].map(r=>`<div class="tile"><b>${r}</b><p>Plantilla lista para filtros y exportación.</p></div>`).join(''); $('tv-total').textContent=advisors.length; $('tv-ready').textContent=advisors.filter(a=>a.status==='Listo para producción').length; $('tv-blocked').textContent=advisors.filter(a=>a.status==='Bloqueado').length; $('tv-actions').innerHTML=advisors.map(a=>`<p>• ${a.name}: ${a.next}</p>`).join(''); $('tv-ai').textContent=ai('resumen'); $('config-grid').innerHTML=Object.entries(config).map(([k,v])=>`<div class="card panel"><h3>${k}</h3><div class="chips">${v.map(x=>`<span class="badge">${x}</span>`).join('')}</div><input placeholder="Añadir nuevo" onkeydown="if(event.key==='Enter'&&this.value.trim()){config['${k}'].push(this.value.trim());this.value='';render()}"></div>`).join(''); $('ai-output').textContent=ai($('ai-prompt').value); }
+    window.removeAdvisor = id => { advisors = advisors.filter(a=>a.id!==id); render(); };
+    $('advisor-form').addEventListener('submit', e => { e.preventDefault(); const name=$('new-name').value.trim(); if(!name) return; advisors.unshift({ id:'adv-'+Date.now(), name, identifier:'INT-'+Math.floor(Math.random()*9000+1000), entry:new Date().toISOString().slice(0,10), supervisor:$('new-supervisor').value, shift:'Mañana', campaign:'Nueva campaña', status:$('new-status').value, phone:'+34 600 000 000', email:name.toLowerCase().replaceAll(' ','.')+'@example.com', progress:12, tags:['nuevo'], next:'Completar ficha, solicitar accesos y agendar inducción operativa.', notes:'Registro demo creado desde la página estática.', access:{vodafone:'no solicitado', internal:'no solicitado', learning:'pendiente', retail:'pendiente', delivery:'pendiente', signature:'pendiente', owner:$('new-supervisor').value, requested:new Date().toISOString(), incidents:[]}, induction:makeInduction(0), training:makeTraining(40), quality:null }); $('new-name').value=''; render(); });
+    $('add-tariff').onclick=()=>{tariffs.unshift({...tariffs[0], name:'Nueva tarifa demo', price:'29,99€', status:'pausada'}); render();};
+    $('add-objection').onclick=()=>{objections.unshift({...objections[0], objection:'Nueva objeción demo', type:'personalizado'}); render();};
+    $('ai-run').onclick=()=>{$('ai-output').textContent=ai($('ai-prompt').value)};
+    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{ $('ai-prompt').value=b.textContent; $('ai-output').textContent=ai(b.textContent); }));
+    render();
+  </script>
+</body>
+</html>

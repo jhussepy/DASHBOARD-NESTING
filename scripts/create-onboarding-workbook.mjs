@@ -1,7 +1,15 @@
 import { utils, writeFile } from "xlsx";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
+
+const workbookPath = "data/vodafone_onboarding_base_dinamica.xlsx";
+const force = process.argv.includes("--force");
 
 mkdirSync("data", { recursive: true });
+
+if (existsSync(workbookPath) && !force) {
+  console.log("Workbook already exists. Use --force to overwrite.");
+  process.exit(0);
+}
 
 const asesores = [
   ["adv-001", "Marina Soler Prieto", "INT-2401", "2026-06-10", "Laura Campos", "Mañana", "Residencial fibra y móvil", "En formación", "+34 600 111 222", "marina.soler@example.com", "Buen dominio de argumentario, pendiente reforzar objeciones de precio.", "alto potencial; tarifas", 72, "Completar simulación de llamada y validar checklist de cancelación de movilidad."],
@@ -73,4 +81,5 @@ const headers = {
 const datasets = { Dashboard_Excel: dashboard, Asesores: asesores, Accesos_Contrato: access, Induccion: induction, Tarifas: tarifas, Rebate: rebate, Formacion: formacion, Calidad: calidad, Incidencias: incidencias, Catalogos: catalogos };
 const wb = utils.book_new();
 Object.entries(datasets).forEach(([name, rows]) => utils.book_append_sheet(wb, utils.aoa_to_sheet([headers[name], ...rows]), name));
-writeFile(wb, "data/vodafone_onboarding_base_dinamica.xlsx");
+writeFile(wb, workbookPath);
+console.log(`${force ? "Overwritten" : "Created"} ${workbookPath}`);

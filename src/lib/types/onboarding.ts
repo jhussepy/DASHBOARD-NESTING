@@ -145,6 +145,8 @@ export interface OnboardingData {
   catalogos: CatalogItem[];
   dashboardExcel: DashboardExcelRow[];
   updatedAt: string;
+  source: "excel" | "fallback";
+  warning?: string;
 }
 
 export interface AlertItem {

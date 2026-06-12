@@ -57,6 +57,19 @@ export function CommandCenter({ initialData }: { initialData: OnboardingData }) 
           </div>
         </header>
 
+        {data.source === "fallback" && (
+          <div className="rounded-[2rem] border border-amber-400/40 bg-amber-500/15 p-5 shadow-[var(--shadow)]">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[.18em] text-amber-500">Datos fallback activos</p>
+                <h2 className="mt-1 text-2xl font-black">Excel local no encontrado</h2>
+                <p className="mt-2 text-sm text-[var(--muted)]">{data.warning ?? "Excel no encontrado. Ejecuta npm run create:workbook."}</p>
+              </div>
+              <button onClick={sync} className="rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-black text-white">Sincronizar Excel</button>
+            </div>
+          </div>
+        )}
+
         <AiCopilot data={data} />
 
         <section id="control" className="space-y-5">

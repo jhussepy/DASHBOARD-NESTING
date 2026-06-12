@@ -39,9 +39,9 @@ El archivo Excel no se sube al repositorio porque es binario. Para generarlo loc
 npm run create:workbook
 ```
 
-Luego inicia el proyecto normalmente con `npm run dev`. Además, los scripts `predev` y `prebuild` regeneran el Excel automáticamente en checkouts limpios, sin subir el binario al PR. El dashboard seguirá leyendo el Excel desde `/data/vodafone_onboarding_base_dinamica.xlsx`. Puedes modificar el archivo, guardarlo y pulsar **Sincronizar Excel** en el dashboard. También existe auto-refresh opcional cada 30 o 60 segundos.
+Luego inicia el proyecto normalmente con `npm run dev`. Además, los scripts `predev` y `prebuild` ejecutan el generador en modo seguro: si el Excel ya existe, no lo sobrescriben. Para regenerarlo desde cero usa `npm run create:workbook -- --force`. El dashboard seguirá leyendo el Excel desde `/data/vodafone_onboarding_base_dinamica.xlsx`. Puedes modificar el archivo, guardarlo y pulsar **Sincronizar Excel** en el dashboard. También existe auto-refresh opcional cada 30 o 60 segundos.
 
-> Importante: el Excel solo contiene estados operativos. No se guardan contraseñas reales ni credenciales sensibles. Los `.xlsx` locales están ignorados por git (`data/*.xlsx`).
+> Importante: el Excel solo contiene estados operativos. No se guardan contraseñas reales ni credenciales sensibles. Los `.xlsx` locales están ignorados por git (`data/*.xlsx`). Si falta el archivo, la app carga datos fallback y muestra una alerta visual hasta que ejecutes `npm run create:workbook`.
 
 ## API de datos
 

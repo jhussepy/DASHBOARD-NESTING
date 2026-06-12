@@ -60,6 +60,12 @@ const incidencias = [
   ["inc-002", "adv-002", "2026-06-11", "Calidad crítica", "high", "En curso", "Nota de calidad por debajo de 70.", "Laura Campos", "Programar refuerzo y nueva simulación."],
   ["inc-003", "adv-005", "2026-06-12", "Contrato sin firma", "high", "Abierta", "Contrato enviado sin firma confirmada.", "Marta León", "Enviar recordatorio y resolver dudas."],
 ];
+const historial = [
+  ["his-001", "adv-001", "2026-06-10 11:20", "Retail", "En proceso", "Activo", "Diego Ramos", "Activación validada para producción inicial.", "captura interna"],
+  ["his-002", "adv-002", "2026-06-11 16:00", "EstadoBloqueo", "En proceso", "Bloqueado", "Sergio Vidal", "Retail pendiente más de 48 horas.", "nota interna"],
+  ["his-003", "adv-003", "2026-06-12 08:20", "UsuarioVodafone", "No solicitado", "Solicitado", "Marta León", "Solicitud registrada sin credenciales sensibles.", "registro operativo"],
+  ["his-004", "adv-005", "2026-06-12 12:30", "FirmaContrato", "Pendiente", "Pendiente", "Marta León", "Se envía recordatorio de firma.", "mensaje"],
+];
 const catalogos = [
   ["Estados operativos", "No solicitado", "Sí"], ["Estados operativos", "Solicitado", "Sí"], ["Estados operativos", "En proceso", "Sí"], ["Estados operativos", "Activo", "Sí"], ["Estados operativos", "Bloqueado", "Sí"], ["Estados operativos", "Requiere soporte", "Sí"], ["Estados operativos", "Pendiente", "Sí"], ["Estados operativos", "Firmado", "Sí"], ["Estados operativos", "Incidencia", "Sí"],
   ["Auto refresh", "30 segundos", "Sí"], ["Auto refresh", "60 segundos", "Sí"],
@@ -76,9 +82,10 @@ const headers = {
   Formacion: ["AdvisorID", "Modulo", "Checklist", "ExamenRapido", "PracticaComercial", "SimulacionLlamada", "AvancePorcentual", "NotaModulo", "ResultadoFinal"],
   Calidad: ["AdvisorID", "FechaEvaluacion", "TipoLlamada", "CumpleSaludo", "CumpleOferta", "CumpleCondiciones", "CumpleTratamientoDatos", "CumpleCierreCorrecto", "ErroresDetectados", "Nota", "RequiereRefuerzo", "Observaciones"],
   Incidencias: ["ID", "AdvisorID", "Fecha", "TipoIncidencia", "Prioridad", "Estado", "Descripcion", "Responsable", "AccionRecomendada"],
+  Historial: ["ID", "AdvisorID", "Fecha", "CampoModificado", "ValorAnterior", "ValorNuevo", "Responsable", "Observacion", "TipoEvidencia"],
   Catalogos: ["Catalogo", "Valor", "Activo"],
 };
-const datasets = { Dashboard_Excel: dashboard, Asesores: asesores, Accesos_Contrato: access, Induccion: induction, Tarifas: tarifas, Rebate: rebate, Formacion: formacion, Calidad: calidad, Incidencias: incidencias, Catalogos: catalogos };
+const datasets = { Dashboard_Excel: dashboard, Asesores: asesores, Accesos_Contrato: access, Induccion: induction, Tarifas: tarifas, Rebate: rebate, Formacion: formacion, Calidad: calidad, Incidencias: incidencias, Historial: historial, Catalogos: catalogos };
 const wb = utils.book_new();
 Object.entries(datasets).forEach(([name, rows]) => utils.book_append_sheet(wb, utils.aoa_to_sheet([headers[name], ...rows]), name));
 writeFile(wb, workbookPath);

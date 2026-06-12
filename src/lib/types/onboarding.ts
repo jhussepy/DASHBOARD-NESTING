@@ -120,6 +120,19 @@ export interface Incident {
   accionRecomendada: string;
 }
 
+
+export interface ChangeHistory {
+  id: string;
+  advisorId: string;
+  fecha: string;
+  campoModificado: string;
+  valorAnterior: string;
+  valorNuevo: string;
+  responsable: string;
+  observacion: string;
+  tipoEvidencia: string;
+}
+
 export interface CatalogItem {
   catalogo: string;
   valor: string;
@@ -142,6 +155,7 @@ export interface OnboardingData {
   formacion: Training[];
   calidad: Quality[];
   incidencias: Incident[];
+  historial: ChangeHistory[];
   catalogos: CatalogItem[];
   dashboardExcel: DashboardExcelRow[];
   updatedAt: string;

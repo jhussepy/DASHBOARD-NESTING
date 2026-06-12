@@ -38,6 +38,22 @@ export function CommandCenter({ initialData }: { initialData: OnboardingData }) 
   }, [autoRefresh, sync]);
 
   const openAdvisorById = (advisorId: string) => setSelectedAdvisor(data.asesores.find((advisor) => advisor.id === advisorId));
+  const printReport = (title: string, body: string) => {
+    const popup = window.open("", "_blank", "width=900,height=700");
+    popup?.document.write(`<html><head><title>${title}</title><style>body{font-family:Arial;padding:32px;line-height:1.5}h1{color:#e60000}</style></head><body><h1>${title}</h1><pre style="white-space:pre-wrap">${body}</pre></body></html>`);
+    popup?.document.close();
+    popup?.print();
+  };
+  const exportCsv = (filename: string, rows: Array<Record<string, unknown>>) => {
+    const keys = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+    const csv = [keys.join(","), ...rows.map((row) => keys.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Shell updatedAt={data.updatedAt} onSync={sync} syncing={syncing}>
@@ -81,8 +97,23 @@ export function CommandCenter({ initialData }: { initialData: OnboardingData }) 
             </select>
             <span className="text-sm text-[var(--muted)]">Al modificar y guardar el Excel, pulsa sincronizar para actualizar KPIs, tablas, ranking, alertas e IA.</span>
           </div>
+          {syncing && <div className="grid gap-3 md:grid-cols-3"><div className="skeleton-line" /><div className="skeleton-line" /><div className="skeleton-line" /></div>}
           <KpiGrid items={kpis} />
           <div className="grid gap-5 xl:grid-cols-[1fr_1fr]"><ProgressBars advisors={data.asesores} /><AlertsPanel alerts={alerts} onOpen={openAdvisorById} /></div>
+        </section>
+
+        <section id="exportaciones" className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-2xl font-black">Exportaciones operativas</h2>
+              <p className="mt-1 text-sm text-[var(--muted)]">Genera reportes listos para imprimir o compartir sin guardar información sensible.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => printReport("Reporte diario Vodafone", `Asesores: ${data.asesores.length}\nBloqueados: ${data.asesores.filter((a) => a.estadoGeneral.toLowerCase().includes("bloque")).length}\nIncidencias abiertas: ${data.incidencias.length}\nActualizado: ${new Date(data.updatedAt).toLocaleString("es-ES")}`)} className="rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-black text-white">Exportar reporte diario PDF</button>
+              <button onClick={() => exportCsv("asesores_bloqueados.csv", data.asesores.filter((advisor) => advisor.estadoGeneral.toLowerCase().includes("bloque")) as unknown as Array<Record<string, unknown>>)} className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-black">Exportar bloqueados Excel</button>
+              <button onClick={() => printReport("Inducción pendiente", data.induccion.filter((item) => item.cancelacionMovilidadExplicada.toLowerCase() !== "explicado").map((item) => `${data.asesores.find((advisor) => advisor.id === item.advisorId)?.nombreCompleto ?? item.advisorId}: ${item.estadoGeneralInduccion}`).join("\n") || "Sin inducciones pendientes.")} className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-black">Exportar inducción PDF</button>
+            </div>
+          </div>
         </section>
 
         <div id="asesores"><DataTable title="Asesores" subtitle="Buscador, ordenamiento, vista compacta/detallada y ficha 360." rows={data.asesores as unknown as Record<string, unknown>[]} columns={[

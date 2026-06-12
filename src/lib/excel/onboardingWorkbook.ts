@@ -1,7 +1,7 @@
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { read, utils } from "xlsx";
-import { AccessContract, Advisor, CatalogItem, DashboardExcelRow, Incident, Induction, OnboardingData, Quality, Rebate, Tariff, Training } from "@/lib/types/onboarding";
+import { AccessContract, Advisor, CatalogItem, DashboardExcelRow, ChangeHistory, Incident, Induction, OnboardingData, Quality, Rebate, Tariff, Training } from "@/lib/types/onboarding";
 import { normalize, splitTags, toNumber } from "@/lib/utils/format";
 
 export const workbookPath = path.join(process.cwd(), "data", "vodafone_onboarding_base_dinamica.xlsx");
@@ -84,6 +84,9 @@ export function getFallbackOnboardingData(warning = fallbackWarning): Onboarding
     ],
     incidencias: [
       { id: "fallback-inc-001", advisorId: "fallback-001", fecha: updatedAt.slice(0, 10), tipoIncidencia: "Excel no encontrado", prioridad: "high", estado: "Abierta", descripcion: warning, responsable: "Coordinación", accionRecomendada: "Ejecutar npm run create:workbook." },
+    ],
+    historial: [
+      { id: "fallback-his-001", advisorId: "fallback-001", fecha: updatedAt, campoModificado: "Fuente", valorAnterior: "Sin Excel", valorNuevo: "Fallback", responsable: "Sistema", observacion: warning, tipoEvidencia: "evento automático" },
     ],
     catalogos: [
       { catalogo: "Estados operativos", valor: "Pendiente", activo: "Sí" },
@@ -216,8 +219,19 @@ export function readOnboardingWorkbook(): OnboardingData {
     accionRecomendada: normalize(row.AccionRecomendada),
   }));
 
+  const historial: ChangeHistory[] = sheetRows(workbook, "Historial").map((row) => ({
+    id: normalize(row.ID),
+    advisorId: normalize(row.AdvisorID),
+    fecha: normalize(row.Fecha),
+    campoModificado: normalize(row.CampoModificado),
+    valorAnterior: normalize(row.ValorAnterior),
+    valorNuevo: normalize(row.ValorNuevo),
+    responsable: normalize(row.Responsable),
+    observacion: normalize(row.Observacion),
+    tipoEvidencia: normalize(row.TipoEvidencia),
+  }));
   const catalogos: CatalogItem[] = sheetRows(workbook, "Catalogos").map((row) => ({ catalogo: normalize(row.Catalogo), valor: normalize(row.Valor), activo: normalize(row.Activo) }));
   const dashboardExcel: DashboardExcelRow[] = sheetRows(workbook, "Dashboard_Excel").map((row) => ({ indicador: normalize(row.Indicador), valor: normalize(row.Valor), objetivo: normalize(row.Objetivo), observacion: normalize(row.Observacion) }));
 
-  return { asesores, accesosContrato, induccion, tarifas, rebate, formacion, calidad, incidencias, catalogos, dashboardExcel, updatedAt: new Date().toISOString(), source: "excel" };
+  return { asesores, accesosContrato, induccion, tarifas, rebate, formacion, calidad, incidencias, historial, catalogos, dashboardExcel, updatedAt: new Date().toISOString(), source: "excel" };
 }

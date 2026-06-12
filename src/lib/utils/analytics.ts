@@ -16,12 +16,26 @@ export function getAdvisorIncidents(data: OnboardingData, advisorId: string) {
   return data.incidencias.filter((incident) => incident.advisorId === advisorId);
 }
 
+export function getAdvisorHistory(data: OnboardingData, advisorId: string) {
+  return data.historial.filter((entry) => entry.advisorId === advisorId);
+}
+
+export function generateInductionCertificate(data: OnboardingData, advisorId: string) {
+  const advisor = data.asesores.find((item) => item.id === advisorId);
+  const induction = getAdvisorInduction(data, advisorId);
+  return `Se deja constancia de que el asesor ${advisor?.nombreCompleto ?? "____"} recibió explicación sobre cancelación correcta de movilidad el día ${induction?.fechaExplicacion || "____"}, explicada por ${induction?.responsableExplico || "____"}. Confirmación del asesor: ${induction?.confirmacionAsesor || "____"}. El asesor confirmó recepción de la información.`;
+}
+
 export function buildAlerts(data: OnboardingData): AlertItem[] {
   const accessMap = byAdvisor(data.accesosContrato);
   const inductionMap = byAdvisor(data.induccion);
+  const trainingMap = new Map(data.formacion.map((row) => [row.advisorId, row]));
+  const qualityMap = new Map(data.calidad.map((row) => [row.advisorId, row]));
   return data.asesores.flatMap((advisor) => {
     const access = accessMap.get(advisor.id);
     const induction = inductionMap.get(advisor.id);
+    const training = trainingMap.get(advisor.id);
+    const quality = qualityMap.get(advisor.id);
     const incidents = getAdvisorIncidents(data, advisor.id);
     const alerts: AlertItem[] = [];
 
@@ -46,7 +60,16 @@ export function buildAlerts(data: OnboardingData): AlertItem[] {
       alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Falta responsable de gestión", detail: "El caso no tiene propietario operativo.", priority: "medium", action: "Asignar responsable en la hoja Accesos_Contrato." });
     }
     if (induction && !isActive(induction.cancelacionMovilidadExplicada)) {
-      alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Movilidad sin explicación confirmada", detail: `Estado inducción: ${induction.estadoGeneralInduccion}.`, priority: "high", action: "Generar constancia y reforzar cancelación correcta de movilidad." });
+      alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Inducción movilidad pendiente", detail: `Estado inducción: ${induction.estadoGeneralInduccion}.`, priority: "high", action: "Generar constancia y reforzar cancelación correcta de movilidad." });
+    }
+    if (quality && quality.nota < 70) {
+      alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Calidad menor a 70", detail: `Nota calidad: ${quality.nota}/100. Errores: ${quality.erroresDetectados || "sin detalle"}.`, priority: "high", action: "Programar refuerzo de calidad y nueva simulación." });
+    }
+    if (training && training.avancePorcentual < 60) {
+      alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Formación menor a 60%", detail: `${training.modulo}: ${training.avancePorcentual}% de avance.`, priority: "medium", action: "Asignar práctica guiada y validar examen rápido." });
+    }
+    if (advisor.avance <= 0) {
+      alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: "Asesor sin avance", detail: "El avance de onboarding está en 0%.", priority: "medium", action: "Auditar datos de la ficha y asignar próxima acción." });
     }
     incidents.filter((incident) => incident.prioridad === "critical" || incident.prioridad === "high").forEach((incident) => {
       alerts.push({ advisorId: advisor.id, advisorName: advisor.nombreCompleto, title: incident.tipoIncidencia, detail: incident.descripcion, priority: incident.prioridad, action: incident.accionRecomendada });
@@ -58,6 +81,8 @@ export function buildAlerts(data: OnboardingData): AlertItem[] {
 export function buildKpis(data: OnboardingData): KpiItem[] {
   const accessMap = byAdvisor(data.accesosContrato);
   const inductionMap = byAdvisor(data.induccion);
+  const trainingMap = new Map(data.formacion.map((row) => [row.advisorId, row]));
+  const qualityMap = new Map(data.calidad.map((row) => [row.advisorId, row]));
   const alerts = buildAlerts(data);
   const advisors = data.asesores;
   const avg = advisors.length ? Math.round(advisors.reduce((sum, advisor) => sum + advisor.avance, 0) / advisors.length) : 0;
@@ -81,6 +106,23 @@ export function buildKpis(data: OnboardingData): KpiItem[] {
     { label: "Inducción movilidad pendiente", value: inductionValues.filter((i) => !isActive(i.cancelacionMovilidadExplicada)).length, icon: "🚌", tone: "warning", helper: "Necesita constancia" },
     { label: "Alertas críticas", value: alerts.filter((a) => a.priority === "critical").length, icon: "🔥", tone: "danger", helper: "Atención inmediata" },
   ];
+}
+
+export function buildQuickReport(type: string, data: OnboardingData) {
+  const alerts = buildAlerts(data);
+  const blocked = data.asesores.filter((advisor) => isBlocked(advisor.estadoGeneral) || isBlocked(getAdvisorAccess(data, advisor.id)?.estadoBloqueo));
+  const retailPending = data.asesores.filter((advisor) => !isActive(getAdvisorAccess(data, advisor.id)?.retail));
+  const unsigned = data.asesores.filter((advisor) => !isActive(getAdvisorAccess(data, advisor.id)?.firmaContrato));
+  const mobilityPending = data.asesores.filter((advisor) => !isActive(getAdvisorInduction(data, advisor.id)?.cancelacionMovilidadExplicada));
+  const priorityLines = alerts.slice(0, 6).map((alert, index) => `${index + 1}. ${alert.advisorName}: ${alert.title} → ${alert.action}`).join("\n") || "Sin alertas prioritarias.";
+
+  if (type === "blocked-message") return `Hola, necesitamos desbloquear tu acceso operativo. Motivo: ${blocked[0]?.observaciones || "caso pendiente de revisión"}. Te contactaremos para validar la acción requerida hoy.`;
+  if (type === "signature-message") return `Hola, te recordamos revisar y firmar el contrato enviado. Si tienes dudas sobre condiciones o firma, responde a este mensaje para resolverlo hoy.`;
+  if (type === "retail") return `Resumen retail pendiente\n\n${retailPending.map((advisor) => `• ${advisor.nombreCompleto}: ${getAdvisorAccess(data, advisor.id)?.retail || "sin dato"}`).join("\n") || "• Sin retail pendiente."}`;
+  if (type === "mobility") return `Movilidad no explicada\n\n${mobilityPending.map((advisor) => `• ${advisor.nombreCompleto}: inducción ${getAdvisorInduction(data, advisor.id)?.estadoGeneralInduccion || "sin dato"}`).join("\n") || "• Todos tienen movilidad explicada."}`;
+  if (type === "priorities") return `Recomendaciones por prioridad\n\n${priorityLines}`;
+
+  return `Reporte diario para superior\n\n• Asesores activos: ${data.asesores.length}.\n• Bloqueados: ${blocked.length}.\n• Retail pendiente: ${retailPending.length}.\n• Firmas pendientes: ${unsigned.length}.\n• Movilidad no explicada: ${mobilityPending.length}.\n• Alertas críticas: ${alerts.filter((alert) => alert.priority === "critical").length}.\n\nPrioridades:\n${priorityLines}`;
 }
 
 export function aiAnswer(prompt: string, data: OnboardingData) {
@@ -111,6 +153,10 @@ export function aiAnswer(prompt: string, data: OnboardingData) {
     const item = data.rebate.find((row) => lower(row.objecionCliente).includes("caro"));
     return `Rebate para “está caro”\n\n• Respuesta corta: ${item?.respuestaCorta || "Validar preocupación y comparar valor total."}\n• Pregunta de diagnóstico: ${item?.preguntaDiagnostico || "¿Qué pagas actualmente por todos tus servicios?"}\n• Técnica de cierre: ${item?.tecnicaCierre || "Comparación de valor."}\n• Riesgo de calidad: ${item?.riesgoCalidad || "No prometer descuentos no confirmados."}`;
   }
+  if (text.includes("reporte")) return buildQuickReport("daily", data);
+  if (text.includes("asesor bloqueado")) return buildQuickReport("blocked-message", data);
+  if (text.includes("firma pendiente")) return buildQuickReport("signature-message", data);
+  if (text.includes("recomendaciones") || text.includes("prioridad")) return buildQuickReport("priorities", data);
   if (text.includes("incidencias")) {
     return `Incidencias críticas\n\n${data.incidencias.filter((i) => i.prioridad === "critical" || i.prioridad === "high").map((i) => `• ${data.asesores.find((a) => a.id === i.advisorId)?.nombreCompleto}: ${i.tipoIncidencia} — ${i.accionRecomendada}`).join("\n") || "• No hay incidencias críticas abiertas."}`;
   }

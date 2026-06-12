@@ -36,3 +36,13 @@ button { cursor: pointer; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--surface-strong); }
 ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--brand) 55%, transparent); border-radius: 999px; }
+@keyframes soft-pulse {
+  0%, 100% { opacity: .72; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.skeleton-line {
+  min-height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--surface-strong), var(--surface-soft), var(--surface-strong));
+  animation: soft-pulse 1.4s ease-in-out infinite;
+}
